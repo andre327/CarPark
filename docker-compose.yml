@@ -1,0 +1,64 @@
+services:
+
+  # Servicio del frontend Angular
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: parkcontrol_frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    networks:
+      - parkcontrol_network
+
+  # Servicio del backend NestJS
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: parkcontrol_backend
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - parkcontrol_network
+
+  # Servicio de base de datos PostgreSQL
+  database:
+    image: postgres:16
+    container_name: parkcontrol_database
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - parkcontrol_network
+
+# Red de comunicación
+networks:
+  parkcontrol_network:
+    driver: bridge
+
+# Persistencia de información
+volumes:
+  postgres_data:
