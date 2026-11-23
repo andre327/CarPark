@@ -219,7 +219,7 @@ El proyecto también busca demostrar la construcción, configuración y comunica
 
 Proyecto académico desarrollado como ejercicio práctico de integración de aplicaciones y contenerización con Docker.
 
-Andrea Figueroa
+Yessica Andrea Figueroa Erazo
 ---
 
 **ParkControl – Gestión inteligente de parqueaderos.**
