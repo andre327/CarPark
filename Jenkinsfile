@@ -1,37 +1,41 @@
+
 pipeline {
     agent any
 
     stages {
         stage('Checkout') {
             steps {
-                // Obtener código
+                echo 'Obteniendo codigo del repositorio...'
+                checkout scm
             }
         }
 
         stage('Build') {
             steps {
-                // Construir imágenes
+                echo 'Construyendo imagenes Docker...'
+                sh 'docker compose build'
             }
         }
 
         stage('Test') {
             steps {
-                // Ejecutar pruebas
+                echo 'Validando configuracion de Docker Compose...'
+                sh 'docker compose config -q'
             }
         }
     }
 
     post {
         success {
-            // Proceso exitoso
+            echo 'Proceso ejecutado exitosamente.'
         }
 
         failure {
-            // Proceso fallido
+            echo 'El proceso ha fallado. Revisar Console Output.'
         }
 
         always {
-            // Limpieza
+            echo 'Finalizando ejecucion del Pipeline.'
         }
     }
 }
