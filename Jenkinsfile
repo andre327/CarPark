@@ -3,6 +3,7 @@ pipeline {
     agent any
 
     stages {
+
         stage('Checkout') {
             steps {
                 echo 'Obteniendo codigo del repositorio...'
@@ -10,24 +11,36 @@ pipeline {
             }
         }
 
-        stage('Build') {
-            steps {
-                echo 'Construyendo imagenes Docker...'
-                sh 'docker compose build'
-            }
-        }
-
-        stage('Test') {
+        stage('Validate Docker Compose') {
             steps {
                 echo 'Validando configuracion de Docker Compose...'
                 sh 'docker compose config -q'
+            }
+        }
+
+        stage('Build Frontend and Backend') {
+            steps {
+                echo 'Construyendo imagen Docker del Frontend y Backend...'
+
+                sh 'docker compose build --progress=plain frontend backend'
+            }
+        }
+
+        stage('Verify Docker Images') {
+            steps {
+                echo 'Verificando las imagenes construidas...'
+
+                sh 'docker image inspect parkcontrol-frontend:latest'
+                sh 'docker image inspect parkcontrol-backend:latest'
+
+                sh 'docker images'
             }
         }
     }
 
     post {
         success {
-            echo 'Proceso ejecutado exitosamente.'
+            echo 'Las imagenes Docker de Frontend y Backend fueron construidas correctamente.'
         }
 
         failure {
