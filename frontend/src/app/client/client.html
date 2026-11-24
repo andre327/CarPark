@@ -1,0 +1,153 @@
+<p-toast/>
+<p-toolbar styleClass="mb-6">
+    <ng-template #start>
+        <p-button label="Nuevo" (click)="openNew();" icon="pi pi-plus" severity="secondary" class="mr-2" />
+    </ng-template>
+</p-toolbar>
+<p-table
+    #dt
+    [value]="client()"
+    [rows]="10"
+    [paginator]="true"
+    [tableStyle]="{ 'min-width': '75rem' }"
+    [rowHover]="true"
+    dataKey="id"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} clientes"
+    [showCurrentPageReport]="true"
+    [rowsPerPageOptions]="[10, 20, 30]"
+>
+    <ng-template #header>
+        <tr>
+            <th pSortableColumn="documentNumber" >
+                Número de documento
+                <p-sortIcon field="documentNumber" />
+            </th>
+            <th pSortableColumn="firstName" >
+                Nombre completo
+                <p-sortIcon field="firstName" />
+            </th>
+            <th pSortableColumn="telephone" >
+                Teléfono
+                <p-sortIcon field="telephone" />
+            </th>
+            <th pSortableColumn="addres">
+                Dirección
+                <p-sortIcon field="addres" />
+            </th>
+            <th pSortableColumn="email" >
+                Correo
+                <p-sortIcon field="email" />
+            </th>
+            <th pSortableColumn="isActive" >
+                Estado
+                <p-sortIcon field="isActive" />
+            </th>
+            <th style="min-width: 10rem"></th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-user>
+        <tr>
+            <td>{{ user.documentNumber }}</td>
+            <td>{{ user.firstName | uppercase  }} {{ user.lastName | uppercase  }}</td>
+            <td>{{ user.telephone }}</td>
+            <td>{{ user.addres | uppercase }}</td>
+            <td>{{ user.email | titlecase }}</td>
+            <td>
+                <p-tag [value]="user.isActive ? 'ACTIVO' : 'INACTIVO'" [severity]="getSeverity(user.isActive)"></p-tag>
+            </td>
+            <td>
+                <div class="flex flex-row gap-3">
+                    <p-button icon="pi pi-pencil" (click)="openEdit(user)" severity="warn" [rounded]="true" [outlined]="true" pTooltip="Eliminar" tooltipPosition="top" />
+                    <p-button (click)="changeUser(user.id)" [icon]="user.isActive ? 'pi pi-ban' : 'pi pi-check-circle'" [severity]="user.isActive ? 'danger' : 'success'" [rounded]="true" [outlined]="true" [pTooltip]="user.isActive ? 'Deshabilitar' : 'Habilitar'" tooltipPosition="top" />
+                </div>
+            </td>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+        <tr>
+            <td colspan="8">
+                <div class="flex flex-col items-center">
+                    <span>Comienza agregando tu primer cliente.</span><br>
+                    <span>Oprime el botón "+ Nuevo"</span>
+                </div>
+            </td>
+        </tr>
+    </ng-template>
+</p-table>
+
+<form [formGroup]="clientForm">
+    <p-dialog
+        [(visible)]="clientDialog"
+        [style]="{ width: '900px', maxHeight: '90vh' }"
+        [maximizable]="true"
+        [header]="'Detalle del cliente'"
+        [modal]="true"
+        [contentStyle]="{ overflow: 'auto', maxHeight: '70vh' }"
+    >
+    <ng-template #content>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="documentNumber" class="block font-bold mb-2">Número de documento <span class="text-red-500">*</span></label>
+                <input type="text" pInputText id="documentNumber" formControlName="documentNumber" placeholder="Ingrese el número de documento" required fluid />
+                @if (isValidField('documentNumber')) {
+                    <small class="text-red-500">{{ getErrors('documentNumber') }}</small>
+                }<br>
+                @if (clientForm.get('documentNumber')?.errors?.['pattern']) {
+                    <small class="text-red-500">
+                        {{ 'Debe contener números' }}
+                    </small>
+                }
+            </div>
+            <div>
+                <label for="firstName" class="block font-bold mb-2">Nombres <span class="text-red-500">*</span></label>
+                <input type="text" pInputText id="firstName" formControlName="firstName" placeholder="Ingrese nombres" required fluid />
+                @if (isValidField('firstName')) {
+                    <small class="text-red-500">{{ getErrors('firstName') }}</small>
+                }      
+            </div>
+            <div>
+                <label for="lastName" class="block font-bold mb-2">Apellidos <span class="text-red-500">*</span></label>
+                <input type="text" pInputText id="lastName" formControlName="lastName" placeholder="Ingrese apellidos" required fluid />
+                @if (isValidField('lastName')) {
+                    <small class="text-red-500">{{ getErrors('lastName') }}</small>
+                } 
+            </div>
+            <div>
+                <label for="email" class="block font-bold mb-2">Correo <span class="text-red-500">*</span></label>
+                <input type="text" pInputText id="email" formControlName="email" placeholder="Ingrese correo" required fluid />
+                @if (isValidField('email')) {
+                    <small class="text-red-500">{{ getErrors('email') }}</small>
+                } 
+                @if (clientForm.get('email')?.errors?.['pattern']) {
+                    <small class="text-red-500">
+                        {{ 'Debe tener estructura de correo' }}
+                    </small>
+                }
+            </div>
+            <div>
+                <label for="telephone" class="block font-bold mb-2">Telefono <span class="text-red-500">*</span></label>
+                <input type="text" pInputText id="telephone" formControlName="telephone" placeholder="Ingrese telefono" required fluid />
+                @if (isValidField('telephone')) {
+                    <small class="text-red-500">{{ getErrors('telephone') }}</small>
+                }<br>
+                @if (clientForm.get('telephone')?.errors?.['pattern']) {
+                    <small class="text-red-500">
+                        {{ 'Debe contener números' }}
+                    </small>
+                }
+            </div>
+            <div>
+                <label for="addres" class="block font-bold mb-2">Dirección<span class="text-red-500">*</span></label>
+                <input type="text" pInputText id="addres" formControlName="addres" placeholder="Ingrese dirección" required fluid />
+                @if (isValidField('addres')) {
+                    <small class="text-red-500">{{ getErrors('addres') }}</small>
+                } 
+            </div>
+        </div>
+    </ng-template>
+    <ng-template #footer>
+        <p-button label="Cancelar" icon="pi pi-times" (onClick)="hideDialog();" />
+        <p-button label="Guardar" icon="pi pi-check" (onClick)="saveClient();"/>
+    </ng-template>
+    </p-dialog>
+</form>

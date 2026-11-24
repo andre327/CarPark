@@ -2,13 +2,13 @@ services:
 
   # Servicio del frontend Angular
   frontend:
-    image: parkcontrol-backend:latest
+    image: parkcontrol-frontend:latest
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: parkcontrol_frontend
     ports:
-      - "4200:80"
+      - "${FRONTEND_PORT}:80"
     depends_on:
       - backend
     networks:
@@ -22,7 +22,7 @@ services:
       dockerfile: Dockerfile
     container_name: parkcontrol_backend
     ports:
-      - "3000:3000"
+      - "${BACKEND_PORT}:3000"
     environment:
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
@@ -45,7 +45,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5432:5432"
+      - "${DB_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

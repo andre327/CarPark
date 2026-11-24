@@ -1,0 +1,210 @@
+<p-toast/>
+<p-toolbar styleClass="mb-6">
+    <ng-template #start>
+        <p-button label="Nuevo" (click)="openNew()" icon="pi pi-plus" severity="secondary" class="mr-2" />
+    </ng-template>
+</p-toolbar>
+<p-table
+    #dt
+    [value]="product()"
+    [rows]="10"
+    [paginator]="true"
+    [tableStyle]="{ 'min-width': '75rem' }"
+    [rowHover]="true"
+    dataKey="id"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} productos"
+    [showCurrentPageReport]="true"
+    [rowsPerPageOptions]="[10, 20, 30]"
+>
+    <ng-template #header>
+        <tr>
+            <th pSortableColumn="code">
+                Código
+                <p-sortIcon field="code" />
+            </th>
+            <th pSortableColumn="name">
+                Nombre
+                <p-sortIcon field="name" />
+            </th>
+            <th pSortableColumn="purchase_price">
+                Precio Compra
+                <p-sortIcon field="purchase_price" />
+            </th>
+            <th pSortableColumn="sale_price">
+                Precio Actual
+                <p-sortIcon field="sale_price" />
+            </th>
+            <th pSortableColumn="minimum_stock">
+                Stock Minimo
+                <p-sortIcon field="minimum_stock" />
+            </th>
+            <th pSortableColumn="current_stock">
+                Stock Disponible
+                <p-sortIcon field="current_stock" />
+            </th>
+            <th pSortableColumn="category_id">
+                Categoria
+                <p-sortIcon field="category_id " />
+            </th>
+            <th pSortableColumn="supplier_id">
+                Proveedor
+                <p-sortIcon field="supplier_id" />
+            </th>
+            <th pSortableColumn="isActive" >
+                Estado
+                <p-sortIcon field="isActive" />
+            </th>
+            <th style="min-width: 10rem"></th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-product>
+        <tr>
+            <td>{{ product.code }}</td>
+            <td>{{ product.name | uppercase }}</td>
+            <td>{{ product.purchase_price | number:'1.0-0' }}</td>
+            <td>{{ product.sale_price | number:'1.0-0' }}</td>
+            <td>{{ product.minimum_stock | number:'1.0-0' }}</td>
+            <td>{{ product.current_stock | number:'1.0-0' }}</td>
+            <td>{{ product.category.name | uppercase }}</td>
+            <td>{{ product.supplier.company_name | uppercase }}</td>
+            <td>
+                <p-tag [value]="product.isActive ? 'ACTIVO' : 'INACTIVO'" [severity]="getSeverity(product.isActive)"></p-tag>
+            </td>
+            <td>
+                <div class="flex flex-row gap-3">
+                    <p-button icon="pi pi-pencil" (click)="openEdit(product)" severity="warn" [rounded]="true" [outlined]="true" pTooltip="Eliminar" tooltipPosition="top" />
+                    <p-button (click)="changeSupplier(product.id)" [icon]="product.isActive ? 'pi pi-ban' : 'pi pi-check-circle'" [severity]="product.isActive ? 'danger' : 'success'" [rounded]="true" [outlined]="true" [pTooltip]="product.isActive ? 'Deshabilitar' : 'Habilitar'" tooltipPosition="top" />
+                </div>
+            </td>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+        <tr>
+            <td colspan="10">
+                <div class="flex flex-col items-center">
+                    <span>Comienza agregando tu primer producto para gestionar el inventario de tu ferretería.</span><br>
+                    <span>Oprime el botón "+ Nuevo"</span>
+                </div>
+            </td>
+        </tr>
+    </ng-template>
+</p-table>
+<form [formGroup]="productForm">
+    <p-dialog
+        [(visible)]="productDialog"
+        [style]="{ width: '900px', maxHeight: '90vh' }"
+        [maximizable]="true"
+        [header]="'Detalle del producto'"
+        [modal]="true"
+        [contentStyle]="{ overflow: 'auto', maxHeight: '70vh' }"
+    >
+    <ng-template #content>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="name" class="block font-bold mb-2">Nombre del producto <span class="text-red-500">*</span></label>
+                <input type="text" pInputText id="name" formControlName="name" placeholder="Ingrese el nombre del producto" required fluid />
+                @if (isValidField('name')) {
+                    <small class="text-red-500">{{ getErrors('name') }}</small>
+                }
+            </div>
+            <div>
+                <label for="purchase_price" class="block font-bold mb-2">Precio de compra <span class="text-red-500">*</span></label>
+                <p-inputNumber id="purchase_price" formControlName="purchase_price" mode="currency" currency="COP" locale="es-CO" styleClass="w-full" placeholder="Ingrese el precio compra" [minFractionDigits]="0" [maxFractionDigits]="0" required fluid />
+                @if (isValidField('purchase_price')) {
+                    <small class="text-red-500">{{ getErrors('purchase_price') }}</small>
+                }<br>
+                @if (productForm.get('purchase_price')?.errors?.['pattern']) {
+                    <small class="text-red-500">
+                        {{ 'Debe contener números' }}
+                    </small>
+                }
+            </div>
+            <div>
+                <label for="sale_price" class="block font-bold mb-2">Precio de venta <span class="text-red-500">*</span></label>
+                <p-inputNumber id="sale_price" formControlName="sale_price" mode="currency" currency="COP" locale="es-CO" styleClass="w-full" placeholder="Ingrese precio de venta" [minFractionDigits]="0" [maxFractionDigits]="0" required fluid />
+                @if (isValidField('sale_price')) {
+                    <small class="text-red-500">{{ getErrors('sale_price') }}</small>
+                }<br>
+                @if (productForm.get('sale_price')?.errors?.['pattern']) {
+                    <small class="text-red-500">
+                        {{ 'Debe contener números' }}
+                    </small>
+                }
+            </div>
+            <div>
+                <label for="current_stock" class="block font-bold mb-2">Stock disponible <span class="text-red-500">*</span></label>
+                <p-inputNumber id="current_stock" formControlName="current_stock" mode="decimal" locale="es-CO" styleClass="w-full" placeholder="Ingrese stock disponible" [useGrouping]="true" [minFractionDigits]="0" [maxFractionDigits]="0" required fluid />
+                @if (isValidField('current_stock')) {
+                    <small class="text-red-500">{{ getErrors('current_stock') }}</small>
+                }<br>
+                @if (productForm.get('current_stock')?.errors?.['pattern']) {
+                    <small class="text-red-500">
+                        {{ 'Debe contener números' }}
+                    </small>
+                }
+            </div>
+            <div>
+                <label for="minimum_stock" class="block font-bold mb-2">Stock minimo <span class="text-red-500">*</span></label>
+                <p-inputNumber id="minimum_stock" formControlName="minimum_stock" mode="decimal" locale="es-CO" styleClass="w-full" placeholder="Ingrese stock disponible" [useGrouping]="true" [minFractionDigits]="0" [maxFractionDigits]="0" required fluid />
+                @if (isValidField('minimum_stock')) {
+                    <small class="text-red-500">{{ getErrors('minimum_stock') }}</small>
+                }<br>
+                @if (productForm.get('minimum_stock')?.errors?.['pattern']) {
+                    <small class="text-red-500">
+                        {{ 'Debe contener números' }}
+                    </small>
+                }
+            </div>
+            <div>
+                <label for="category_id" class="block font-bold mb-2">Categoria <span class="text-red-500">*</span></label>
+                <p-select
+                    id="category_id"
+                    [options]="category()"
+                    formControlName="category_id"
+                    optionLabel="name"
+                    optionValue="id"
+                    class="w-full"
+                    [showClear]="true"
+                    placeholder="Seleccione una categoria"
+                    [filter]="true"
+                    [appendTo]="'body'"
+                >
+                </p-select>
+                @if (isValidField('category_id')) {
+                    <small class="text-red-500">{{ getErrors('category_id') }}</small>
+                }
+            </div>
+            <div>
+                <label for="supplier_id" class="block font-bold mb-2">Proveedor <span class="text-red-500">*</span></label>
+                <p-select
+                    id="supplier_id"
+                    [options]="supplier()"
+                    formControlName="supplier_id"
+                    optionLabel="contact_name"
+                    optionValue="id"
+                    class="w-full"
+                    [showClear]="true"
+                    placeholder="Seleccione un proveedor"
+                    [filter]="true"
+                    [appendTo]="'body'"
+                >
+                </p-select>
+                @if (isValidField('supplier_id')) {
+                    <small class="text-red-500">{{ getErrors('supplier_id') }}</small>
+                }
+            </div>
+            <div>
+                <label for="description" class="block font-bold mb-2">Descripción </label>
+                <textarea class="w-full" pTextarea formControlName="description" placeholder="Ej: Martillo de acero de 16 oz con mango ergonómico" [autoResize]="true" rows="5"></textarea>
+                @if (isValidField('description')) {
+                    <small class="text-red-500">{{ getErrors('description') }}</small>
+                }
+            </div>
+        </div>
+    </ng-template>
+    <ng-template #footer>
+        <p-button label="Cancelar" icon="pi pi-times" (onClick)="hideDialog();" />
+        <p-button label="Guardar" icon="pi pi-check" (onClick)="saveProduct();"/>
+    </ng-template>
+    </p-dialog>
+</form>
